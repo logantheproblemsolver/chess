@@ -11,27 +11,71 @@ const App: React.FC = () => {
   )
 
   const [fen, setFen] = useState(chess.fen());
-
+  const [status, setStatus] = useState("")
+  const [movesMade, setMovesMade] = useState([])
 
   const handleMove = (move: ShortMove) => {
-    if (chess.move(move)) {
-      setTimeout(() => {
-        const moves = chess.moves();
+    console.log(move.to);
+    console.log(chess.in_check())
 
-        if (moves.length > 0) {
-          const computerMove = moves[Math.floor(Math.random() * moves.length)];
-          chess.move(computerMove);
-          setFen(chess.fen());
-        }
-      }, 300);
+    if (chess.move(move)) {
+      if (chess.in_checkmate()) {
+        console.log("Checkmate!")
+        setStatus("Checkmate!");
+      } else {
+        setStatus("");
+      }
+      
+      if (chess.in_check()) {
+        console.log("In Check!")
+        setStatus("In Check!");
+      } else {
+        setStatus("");
+      }
+  
+      if (chess.in_stalemate()) {
+        console.log("Stalemate!")
+        setStatus("Stalemate!");
+      } else {
+        setStatus("");
+      }
+  
+
+
+      const moves = chess.moves();
+      console.log(chess.history());
+      if (moves.length > 0) {
+        const computerMove = moves[Math.floor(Math.random() * moves.length)];
+        chess.move(computerMove);
+        setFen(chess.fen());
+        if (chess.in_check()) {
+          console.log("In Check!")
+          setStatus("In Check!");
+        } else {
+          setStatus("");
+        }        
+        return true;
+      } 
+      if (chess.in_checkmate()) {
+        console.log("Checkmate!")
+        setStatus("Checkmate!");
+      }
+  
+      if (chess.in_stalemate()) {
+        console.log("Stalemate!")
+        setStatus("Stalemate!");
+      }
+      
 
       setFen(chess.fen());
+      return chess.game_over;
     }
   }
-
+  
   return (
     <div className="flex-center">
       <h1>Random Chess</h1>
+      <p>{status}</p>
       <Chessboard
         width={400}
         position={fen}
@@ -41,6 +85,7 @@ const App: React.FC = () => {
             to: move.targetSquare,
             promotion: 'q',
           })}
+        showNotation={true}
       />
     </div>
   );
